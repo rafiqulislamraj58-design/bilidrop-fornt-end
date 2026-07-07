@@ -3,12 +3,29 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, authClient } from "@/lib/auth-client";
 
-const Navbar = ({ user, onLogout }) => {
+const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { data: session, isPending } = useSession();
+  const user = session?.user;
   const pathname = usePathname();
 
   const isActive = (path) => pathname === path || pathname.startsWith(path);
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            window.location.href = '/';
+          },
+        },
+      });
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
 
   return (
     <nav className="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 shadow-sm">
@@ -28,7 +45,7 @@ const Navbar = ({ user, onLogout }) => {
             <Link href="/about" className={`transition-colors ${isActive('/about') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>About</Link>
             <Link href="/contact" className={`transition-colors ${isActive('/contact') ? 'text-indigo-600 dark:text-indigo-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>Contact</Link>
 
-            {user && (
+            {!isPending && user && (
               <div className="relative group">
                 <button className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                   Dashboard <span className="text-xs">▼</span>
@@ -53,8 +70,11 @@ const Navbar = ({ user, onLogout }) => {
               </div>
             )}
           </div>
+
           <div className="hidden md:flex items-center gap-4">
-            {user ? (
+            {isPending ? (
+              <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            ) : user ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded-full flex items-center justify-center font-semibold text-lg">
@@ -67,14 +87,14 @@ const Navbar = ({ user, onLogout }) => {
                 </div>
 
                 <button
-                  onClick={onLogout}
+                  onClick={handleLogout}
                   className="px-4 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-xl font-medium transition-colors text-sm"
                 >
                   Logout
                 </button>
               </div>
             ) : (
-              <Link href="/login" className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all">
+              <Link href="/auth/signin" className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all">
                 Login
               </Link>
             )}
@@ -136,7 +156,7 @@ const Navbar = ({ user, onLogout }) => {
 
                 <button
                   onClick={() => {
-                    onLogout();
+                    handleLogout();
                     setIsOpen(false);
                   }}
                   className="mt-10 w-full py-4 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 rounded-2xl hover:bg-red-50 dark:hover:bg-red-950 font-medium text-base"
@@ -148,7 +168,7 @@ const Navbar = ({ user, onLogout }) => {
 
             {!user && (
               <Link
-                href="/login"
+                href="/auth/signin"
                 onClick={() => setIsOpen(false)}
                 className="mt-10 w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-2xl text-center text-base"
               >
