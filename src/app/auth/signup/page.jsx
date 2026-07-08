@@ -1,29 +1,32 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Button, Input } from '@heroui/react';
-import { motion } from 'framer-motion';
-import { authClient } from '@/lib/auth-client';   
+import React, { useState } from "react";
+import Link from "next/link";
+import { Button, Input } from "@heroui/react";
+import { Description, Label, Radio, RadioGroup } from "@heroui/react";
+import { motion } from "framer-motion";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignupPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("user");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setIsLoading(true);
 
     try {
       const { error: signupError } = await authClient.signUp.email({
         name,
         email,
+        role,
         password,
         callbackURL: "/",
       });
@@ -33,8 +36,9 @@ export default function SignupPage() {
         return;
       }
 
-      setSuccess("✅ Account created successfully! Please check your email for verification.");
-      
+      setSuccess(
+        "✅ Account created successfully! Please check your email for verification.",
+      );
     } catch (err) {
       console.error("Signup Error:", err);
       setError("Something went wrong. Please try again.");
@@ -52,17 +56,21 @@ export default function SignupPage() {
       >
         <div className="flex justify-center mb-10">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-3xl flex items-center justify-center text-5xl shadow-2xl">
-              
-            </div>
-            <span className="font-bold text-4xl tracking-tighter text-gray-900 dark:text-white">BiblioDrop</span>
+            <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-3xl flex items-center justify-center text-5xl shadow-2xl"></div>
+            <span className="font-bold text-4xl tracking-tighter text-gray-900 dark:text-white">
+              BiblioDrop
+            </span>
           </Link>
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 p-10">
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Create Account</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-3">Join our reading community</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Create Account
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-3">
+              Join our reading community
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-7">
@@ -98,9 +106,47 @@ export default function SignupPage() {
               description="Minimum 8 characters"
               fullWidth
             />
+            <div className="flex flex-col gap-4">
+              <Label>chosse  who are you</Label>
+              <RadioGroup
+                defaultValue="user"
+                name="role"
+                orientation="horizontal"
+                onChange={value=>setRole(value)}
+               
+              >
+                <Radio value="Admin">
+                  <Radio.Content>
+                    <Radio.Control>
+                      <Radio.Indicator />
+                    </Radio.Control>
+                    libarien
+                  </Radio.Content>
+                  <Description>i am libarien </Description>
+                </Radio>
+                <Radio  value="user">
+                  <Radio.Content>
+                    <Radio.Control>
+                      <Radio.Indicator />
+                    </Radio.Control>
+                    user
+                  </Radio.Content>
+                  <Description>user</Description>
+                </Radio>
+                
+              </RadioGroup>
+            </div>
 
-            {error && <div className="text-red-600 text-sm text-center bg-red-50 dark:bg-red-950 p-3 rounded-2xl">{error}</div>}
-            {success && <div className="text-green-600 text-sm text-center bg-green-50 dark:bg-green-950 p-3 rounded-2xl">{success}</div>}
+            {error && (
+              <div className="text-red-600 text-sm text-center bg-red-50 dark:bg-red-950 p-3 rounded-2xl">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="text-green-600 text-sm text-center bg-green-50 dark:bg-green-950 p-3 rounded-2xl">
+                {success}
+              </div>
+            )}
 
             <Button
               type="submit"
@@ -109,15 +155,18 @@ export default function SignupPage() {
               className="w-full font-semibold py-7 text-base"
               isLoading={isLoading}
             >
-              {isLoading ? 'Creating Account...' : 'Create My Account'}
+              {isLoading ? "Creating Account..." : "Create My Account"}
             </Button>
           </form>
         </div>
 
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Already have an account?{' '}
-            <Link href="/auth/signin" className="text-indigo-600 font-medium hover:underline">
+            Already have an account?{" "}
+            <Link
+              href="/auth/signin"
+              className="text-indigo-600 font-medium hover:underline"
+            >
               Sign in
             </Link>
           </p>
