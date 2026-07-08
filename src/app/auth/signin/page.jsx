@@ -50,7 +50,11 @@ export default function LoginPage() {
         <div className="flex justify-center mb-10">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-3xl flex items-center justify-center text-5xl shadow-2xl">
-              
+              <img
+              src="https://i.pinimg.com/1200x/76/0d/a1/760da163b60973719d7c910e7a248376.jpg" 
+              alt="BiblioDrop Logo"
+              className="w-9 h-9 rounded-2xl shadow-md"
+            />
             </div>
             <span className="font-bold text-4xl tracking-tighter text-gray-900 dark:text-white">BiblioDrop</span>
           </Link>

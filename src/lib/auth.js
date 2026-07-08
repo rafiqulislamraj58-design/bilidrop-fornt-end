@@ -6,18 +6,18 @@ const client = new MongoClient(process.env.MONGO_DB_URI);
 const db = client.db(process.env.AUTH_DB_NAME);
 
 export const auth = betterAuth({
-  emailAndPassword: { 
-    enabled: true, 
+  emailAndPassword: { enabled: true },
+  providers: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    },
   },
-  database: mongodbAdapter(db, {
-   
-    client
-  }),
+  database: mongodbAdapter(db, { client }),
   user: {
-       additionalFields: {
-          role: {
-              default:"user"
-            } 
-        }
-    }
+    additionalFields: {
+      role: { default: "user" },
+      photoURL: { default: "" },
+    },
+  },
 });

@@ -12,6 +12,11 @@ const Footer = () => {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-2xl flex items-center justify-center text-3xl">
+              <img
+              src="https://i.pinimg.com/1200x/76/0d/a1/760da163b60973719d7c910e7a248376.jpg" 
+              alt="BiblioDrop Logo"
+              className="w-9 h-9 rounded-2xl shadow-md"
+            />
                 
               </div>
               <span className="font-bold text-2xl text-gray-900 dark:text-white">BiblioDrop</span>
