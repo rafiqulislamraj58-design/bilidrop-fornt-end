@@ -14,7 +14,7 @@ const Librarian = () => {
 
   return (
     <div className="p-6">
-      <h2>Welcome back, {user?.name || "Librarian"}</h2>
+      <h2>Welcome back, {user?.name || "libarian"}</h2>
     </div>
   );
 };
