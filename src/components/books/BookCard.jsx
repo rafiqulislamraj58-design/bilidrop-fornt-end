@@ -42,7 +42,7 @@ export default function BookCard({ book }) {
             </p>
 
             <p className="font-bold text-lg">
-              ৳ {book.price}
+              $ {book.price}
             </p>
           </div>
 
