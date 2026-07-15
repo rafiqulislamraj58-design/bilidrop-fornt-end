@@ -14,11 +14,11 @@ export default function PaymentSuccessPage() {
           />
         </div>
 
-        <h1 className="text-4xl font-bold mt-8">
+        <h1 className="text-4xl text-blue-400 font-bold mt-8">
           Payment Successful 🎉
         </h1>
 
-        <p className="text-gray-500 mt-4 leading-7">
+        <p className="text-blue-500 mt-4 leading-7">
           Thank you for your payment.
           <br />
           Your delivery request has been received.
@@ -30,14 +30,14 @@ export default function PaymentSuccessPage() {
 
           <Link
             href="/browse"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-black px-8 py-3 rounded-xl font-semibold"
           >
             Browse More Books
           </Link>
 
           <Link
             href="/dashboard/user"
-            className="border border-gray-300 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold"
+            className="border border-blue-300 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold"
           >
             My Dashboard
           </Link>

@@ -1,23 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import {
   CardElement,
   useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
-
+import { useRouter } from "next/navigation";
 import axiosSecure from "@/lib/axiosSecure";
 
 export default function CheckoutForm({ book }) {
   const stripe = useStripe();
   const elements = useElements();
+  const router = useRouter();
 
   const [clientSecret, setClientSecret] = useState("");
-
   const [loading, setLoading] = useState(false);
-
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -32,9 +30,11 @@ export default function CheckoutForm({ book }) {
           }
         );
 
+        console.log("Client Secret:", res.data.data.clientSecret);
+
         setClientSecret(res.data.data.clientSecret);
       } catch (error) {
-        console.log(error);
+        console.error("Create Payment Intent Error:", error);
       }
     };
 
@@ -47,10 +47,14 @@ export default function CheckoutForm({ book }) {
     if (!stripe || !elements) return;
 
     setLoading(true);
+    setMessage("");
 
     const card = elements.getElement(CardElement);
 
-    if (!card) return;
+    if (!card) {
+      setLoading(false);
+      return;
+    }
 
     const { error } = await stripe.createPaymentMethod({
       type: "card",
@@ -59,41 +63,44 @@ export default function CheckoutForm({ book }) {
 
     if (error) {
       setMessage(error.message);
-
       setLoading(false);
-
       return;
     }
 
-    const result = await stripe.confirmCardPayment(
-      clientSecret,
-      {
-        payment_method: {
-          card,
-        },
-      }
-    );
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card,
+      },
+    });
 
     if (result.error) {
       setMessage(result.error.message);
-
       setLoading(false);
-
       return;
     }
 
+    console.log("Payment Result:", result.paymentIntent);
+
     if (result.paymentIntent.status === "succeeded") {
       try {
-        await axiosSecure.post("/payments/save", {
+        const res = await axiosSecure.post("/payments/save", {
           bookId: book._id,
           amount: book.price,
           paymentIntentId: result.paymentIntent.id,
           transactionId: result.paymentIntent.id,
         });
 
-        window.location.href = "/payment/success";
+        console.log("Save Response:", res.data);
+
+        router.push("/payment/success");
+        router.refresh();
       } catch (err) {
-        console.log(err);
+        console.error("Save Payment Error:", err);
+
+        setMessage(
+          err.response?.data?.message ||
+            "Payment saved failed."
+        );
       }
     }
 
@@ -101,10 +108,7 @@ export default function CheckoutForm({ book }) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-6"
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="border rounded-xl p-5">
         <CardElement
           options={{
@@ -118,22 +122,15 @@ export default function CheckoutForm({ book }) {
       </div>
 
       <button
-        disabled={
-          !stripe ||
-          !clientSecret ||
-          loading
-        }
-        className="w-full bg-blue-600 hover:bg-blue-700 text-black py-3 rounded-xl font-bold"
+        type="submit"
+        disabled={!stripe || !clientSecret || loading}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold disabled:opacity-50"
       >
-        {loading
-          ? "Processing..."
-          : `Pay $ ${book.price}`}
+        {loading ? "Processing..." : `Pay $${book.price}`}
       </button>
 
       {message && (
-        <p className="text-red-600">
-          {message}
-        </p>
+        <p className="text-red-600 text-sm">{message}</p>
       )}
     </form>
   );

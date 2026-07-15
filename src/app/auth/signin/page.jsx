@@ -1,40 +1,73 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Button, Input } from '@heroui/react';
-import { motion } from 'framer-motion';
-import { authClient } from '@/lib/auth-client';
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Button, Input } from "@heroui/react";
+import { motion } from "framer-motion";
+import { authClient } from "@/lib/auth-client";
+import axiosPublic from "@/lib/axiosPublic";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+
+    setError("");
     setIsLoading(true);
 
     try {
-      const { error: signinError } = await authClient.signIn.email({
+
+      const { data, error: signinError } = await authClient.signIn.email({
         email,
         password,
+        callbackURL: "/",
       });
 
       if (signinError) {
-        setError(signinError.message || "Login failed. Please check your credentials.");
+        setError(
+          signinError.message ||
+            "Login failed. Please check your credentials."
+        );
         return;
       }
 
-      router.push('/');
+      if (!data?.user) {
+        setError("Unable to get user information.");
+        return;
+      }
+
+      const response = await axiosPublic.post("/auth/sync-user", {
+        name: data.user.name || "",
+        email: data.user.email,
+        photoURL: data.user.image || "",
+        role: data.user.role || "user",
+      });
+
+      if (response.data?.success) {
+        localStorage.setItem(
+          "access-token",
+          response.data.data.token
+        );
+      }
+
+      router.push("/");
+      router.refresh();
     } catch (err) {
       console.error("Login Error:", err);
-      setError("Something went wrong. Please try again.");
+
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Something went wrong."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -51,19 +84,27 @@ export default function LoginPage() {
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-violet-600 text-white rounded-3xl flex items-center justify-center text-5xl shadow-2xl">
               <img
-              src="https://i.pinimg.com/1200x/76/0d/a1/760da163b60973719d7c910e7a248376.jpg" 
-              alt="BiblioDrop Logo"
-              className="w-9 h-9 rounded-2xl shadow-md"
-            />
+                src="https://i.pinimg.com/1200x/76/0d/a1/760da163b60973719d7c910e7a248376.jpg"
+                alt="BiblioDrop Logo"
+                className="w-9 h-9 rounded-2xl shadow-md"
+              />
             </div>
-            <span className="font-bold text-4xl tracking-tighter text-gray-900 dark:text-white">BiblioDrop</span>
+
+            <span className="font-bold text-4xl tracking-tighter text-gray-900 dark:text-white">
+              BiblioDrop
+            </span>
           </Link>
         </div>
 
         <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 p-10">
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-3">Sign in to continue reading</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Welcome Back
+            </h1>
+
+            <p className="text-gray-500 dark:text-gray-400 mt-3">
+              Sign in to continue reading
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-7">
@@ -76,6 +117,7 @@ export default function LoginPage() {
               variant="bordered"
               size="lg"
               fullWidth
+          
             />
 
             <Input
@@ -87,15 +129,23 @@ export default function LoginPage() {
               variant="bordered"
               size="lg"
               fullWidth
+              
             />
 
             <div className="flex justify-end -mt-4">
-              <Link href="/forgot-password" className="text-sm text-indigo-600 hover:underline">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-indigo-600 hover:underline"
+              >
                 Forgot password?
               </Link>
             </div>
 
-            {error && <div className="text-red-600 text-sm text-center bg-red-50 dark:bg-red-950 p-3 rounded-2xl">{error}</div>}
+            {error && (
+              <div className="text-red-600 text-sm text-center bg-red-50 dark:bg-red-950 p-3 rounded-2xl">
+                {error}
+              </div>
+            )}
 
             <Button
               type="submit"
@@ -104,15 +154,18 @@ export default function LoginPage() {
               className="w-full font-semibold py-7 text-base"
               isLoading={isLoading}
             >
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {isLoading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
         </div>
 
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-indigo-600 font-medium hover:underline">
+            Donot have an account?{" "}
+            <Link
+              href="/auth/signup"
+              className="text-indigo-600 font-medium hover:underline"
+            >
               Create one
             </Link>
           </p>
